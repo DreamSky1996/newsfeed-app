@@ -4,13 +4,15 @@ const { REACT_APP_GOOGLE_MAPS_API_KEY } = process.env;
 const {REACT_APP_LOCARION_URL} = process.env;
 
 export const getArticleListApi = (page=1, prLocation="", userId="") => {
-    var apiUrl = REACT_APP_URL + "newsfeed_articles/list?page=" + page;
+    var apiUrl = REACT_APP_URL + "list?page=" + page;
     if(prLocation !== "") {
         // var locations = prLocation.split(",");
         var location_url = prLocation.replaceAll(" ", "%20");
         apiUrl = apiUrl + "&location=" + location_url;
     }
-    apiUrl = apiUrl + "&user_id=" + userId;
+    if(userId !== "" ){
+        apiUrl = apiUrl + "&user_id=" + userId;
+    }
 
     return client(apiUrl)
         .then((data) => data)

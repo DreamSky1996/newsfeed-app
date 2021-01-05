@@ -30,13 +30,16 @@ export default class Home extends React.Component {
             super(props);
             var cookie_name = Cookies.get("user_id") || "";
             var cookie_location = Cookies.get("curLocation") || "";
+            var inputLocation = {
+                "name": cookie_location
+            };
             this.state = {
                 checked: true,
                 locations:[],
                 data:[],
                 page:1,
                 searchValue: "",
-                inputValue: cookie_location,
+                inputValue: inputLocation,
                 user_id : cookie_name,
                 curLocation : cookie_location,
                 locationLoaingFlag: false,
@@ -52,8 +55,11 @@ export default class Home extends React.Component {
             
             if(P_location !=null && P_object_id !=null ) {
                 var location = P_location.replaceAll("%20", " ");
+                var location_obj = {
+                    "name": location
+                }
                 this.setState({
-                    inputValue: location,
+                    inputValue: location_obj,
                     user_id :P_object_id,
                 });
                 getArticleListApi(1, location, P_object_id)
@@ -83,6 +89,9 @@ export default class Home extends React.Component {
     
                 var cookie_name = Cookies.get("user_id") || "";
                 var cookie_location = Cookies.get("curLocation") || "";
+                var inputLocation = {
+                    "name": cookie_location
+                }
                 if(localStorage.getItem("myData")){
                     global.apiCallFlag = false;
                     var init_data = JSON.parse(localStorage.getItem("myData"))
@@ -92,7 +101,7 @@ export default class Home extends React.Component {
                         locations:[],
                         page: init_data.page,
                         data: init_data.data,
-                        inputValue: cookie_location,
+                        inputValue: inputLocation,
                         searchValue: "",
                         user_id :  cookie_name,
                         curLocation : cookie_location,
@@ -102,10 +111,13 @@ export default class Home extends React.Component {
                     .then(res => {
                         if(res != null) {
                             console.log(res);
+                            var inputLocation = {
+                                "name": res.location
+                            }
                             this.setState({
                                 data:res.articles,
                                 page:1,
-                                inputValue: res.location,
+                                inputValue: inputLocation,
                                 user_id :res.user_id,
                                 curLocation: res.location
                             });
@@ -212,12 +224,13 @@ export default class Home extends React.Component {
         }
         
         handleInputChange = (event, newValue) => {
-            console.log(newValue);
-            this.setState({
-                inputValue: newValue
-            });
+            
+            
             if(newValue){
-                this.getArticleList(1, newValue, this.state.user_id);
+                this.setState({
+                    inputValue: newValue
+                });
+                this.getArticleList(1, newValue.name, this.state.user_id);
             }
             
         };
@@ -243,7 +256,7 @@ export default class Home extends React.Component {
             console.log('click');
             this.timerID = setInterval(
                 this.tick,
-                500
+                1000
             );
 
             
@@ -256,25 +269,31 @@ export default class Home extends React.Component {
                     if(res != null) {
                         console.log(res);
                         var json = JSON.parse(res);
-                        var address = json['results'][0]['address_components'];
-                        var suburb = "";
-                        var postcode = "";
+                        // var address = json['results'][0]['address_components'];
+                        // var suburb = "";
+                        // var postcode = "";
 
-                        address.forEach(function(entry) {
-                            if (entry[['types']][0] == "locality") { suburb = entry['long_name']; }
-                            if (entry[['types']][0] == "postal_code") { postcode = entry['long_name']; }
-                        });
+                        // address.forEach(function(entry) {
+                        //     if (entry[['types']][0] == "locality") { suburb = entry['long_name']; }
+                        //     if (entry[['types']][0] == "postal_code") { postcode = entry['long_name']; }
+                        // });
 
-                        var result = suburb + ", " + postcode;
+                        // var result = {
+                        //     "name": suburb + ", " + postcode
+                        // };
 
+                        var address = json['results'][0]['formatted_address'];
+                        var result = {
+                            "name": address
+                        };
                         this.setState({
                             inputValue: result,
                         });
-                        this.getArticleList(1, result, this.state.user_id);
+                        this.getArticleList(1, result.name, this.state.user_id);
                     } else {
                         alert('Not find location!');
                         this.setState({
-                            inputValue: "",
+                            inputValue: {"name":""},
                         });
                     }
                 })
@@ -302,7 +321,7 @@ export default class Home extends React.Component {
                             data:res.articles,
                             page:page,
                             curLocation: location,
-                            user_id :res.user_id
+                            user_id :res.user_id,
                         });
                         var tem_data = {
                             page:page,
@@ -313,6 +332,22 @@ export default class Home extends React.Component {
                         );
                         Cookies.set('user_id',res.user_id);
                         Cookies.set('curLocation', location);
+                    } else {
+                        this.setState({
+                            data:[],
+                            page:0,
+                            curLocation: "",
+                            user_id :"",
+                        });
+                        var tem_data = {
+                            page:null,
+                            data: null
+                        };
+                        localStorage.setItem("myData",
+                            JSON.stringify(tem_data) 
+                        );
+                        Cookies.set('user_id',"");
+                        Cookies.set('curLocation', "");
                     }
                 });
         }
@@ -350,7 +385,7 @@ export default class Home extends React.Component {
                                     inputValue={this.state.searchValue}
                                     onInputChange={this.handleChangeText}
                                     options={this.state.locations}
-                                    getOptionLabel={(option) => option.name}
+                                    getOptionLabel={(option) => (option?option.name:"")}
                                     renderInput={(params) => (
                                     <TextField 
                                         {...params}  
