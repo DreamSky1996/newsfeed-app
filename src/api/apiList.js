@@ -1,6 +1,7 @@
 import client from './client';
 const { REACT_APP_URL } = process.env;
 const { REACT_APP_GOOGLE_MAPS_API_KEY } = process.env;
+const {REACT_APP_LOCARION_URL} = process.env;
 
 export const getArticleListApi = (page=1, prLocation="", userId="") => {
     var apiUrl = REACT_APP_URL + "newsfeed_articles/list?page=" + page;
@@ -17,7 +18,9 @@ export const getArticleListApi = (page=1, prLocation="", userId="") => {
 }
 
 export const getLocationListApi = (locationKey) => {
-    var apiUrl = REACT_APP_URL + "newsfeed_locations/matches?startswith=" + locationKey;
+    // var apiUrl = REACT_APP_URL + "newsfeed_locations/matches?startswith=" + locationKey;
+    var apiUrl = REACT_APP_LOCARION_URL  + "matches?startswith=" + locationKey;
+    console.log(apiUrl);
     return window
     .fetch(apiUrl)
     .then(r => {

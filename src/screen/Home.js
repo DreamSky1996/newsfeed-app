@@ -10,8 +10,9 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import IconButton from '@material-ui/core/IconButton';
 import Cookies from 'js-cookie';
 import { Helmet } from 'react-helmet'
-
-
+import parse from 'autosuggest-highlight/parse';
+import match from 'autosuggest-highlight/match';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import ArticleCardComponent from '../components/ArticleCardComponent';
 import {getArticleListApi, getLocationListApi, getLocationApi} from '../api/apiList';
@@ -22,6 +23,7 @@ global.g_lat = null;
 global.g_lng = null;
 global.apiCallFlag = false;
 global.delayFlag = false;
+global.locationPrekeyLength = 0;
 export default class Home extends React.Component {
       
         constructor (props) {
@@ -37,6 +39,7 @@ export default class Home extends React.Component {
                 inputValue: cookie_location,
                 user_id : cookie_name,
                 curLocation : cookie_location,
+                locationLoaingFlag: false,
             };
         }
 
@@ -184,21 +187,28 @@ export default class Home extends React.Component {
 
         handleChangeText = (event, newInputValue) => {
             this.setState({ searchValue: newInputValue });
-            if(newInputValue.length === 3) {
+            console.log(newInputValue);
+            if(newInputValue.length === 3 && global.locationPrekeyLength < 3) {
+                this.setState({
+                    locationLoaingFlag: true
+                });
                 getLocationListApi(newInputValue)
                 .then(res => {
                     if(res != null) {
-                        console.log(res);
                         this.setState({
-                            locations: res
+                            locations: res['locations']
                         });
                     }
+                    this.setState({
+                        locationLoaingFlag: false
+                    });
                 });
             } else if(newInputValue.length < 3) {
                 this.setState({
                     locations: []
                 });
             }
+            global.locationPrekeyLength = newInputValue.length;
         }
         
         handleInputChange = (event, newValue) => {
@@ -333,12 +343,14 @@ export default class Home extends React.Component {
                             </div>
                             <div style={{display:"flex", alignItems:"center",}}>
                                 <Autocomplete
+                                    style={{width:"-webkit-fill-available",marginRight:10, paddingLeft:10}}
                                     freeSolo
                                     value={this.state.inputValue}
                                     onChange={this.handleInputChange}
                                     inputValue={this.state.searchValue}
                                     onInputChange={this.handleChangeText}
-                                    options={this.state.locations.map((location) => location)}
+                                    options={this.state.locations}
+                                    getOptionLabel={(option) => option.name}
                                     renderInput={(params) => (
                                     <TextField 
                                         {...params}  
@@ -346,12 +358,31 @@ export default class Home extends React.Component {
                                         variant="outlined" 
                                         />
                                     )}
-                                    style={{width:"-webkit-fill-available",marginRight:10, paddingLeft:10}}
+                                    renderOption={(option, { inputValue }) => {
+                                        const matches = match(option.name, inputValue);
+                                        const parts = parse(option.name, matches);
+                                
+                                        return (
+                                          <div style={{width:"100%"}}>
+                                              <div style={{float:'left'}}>
+                                                {parts.map((part, index) => (
+                                                    <span key={index} style={{ fontWeight: part.highlight ? 700 : 400,backgroundColor: part.highlight ?'yellow': 'white' }}>
+                                                        {part.text}
+                                                    </span>
+                                                ))}
+                                              </div>
+                                            <span style={{float:'right'}}>{option.council}</span>
+                                          </div>
+                                        );
+                                      }}
                                 />
                                 <IconButton 
                                     onClick={this.handleIconBtnClick}
                                     style={{marginRight:10, border: 0, backgroundColor:"transparent"}} >
-                                    <GpsFixedIcon/>
+                                    {
+                                        this.state.locationLoaingFlag? <CircularProgress /> : <GpsFixedIcon/>
+                                    }
+                                    
                                 </IconButton>
                                     
                             </div>
