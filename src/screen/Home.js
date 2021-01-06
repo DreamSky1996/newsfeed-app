@@ -23,7 +23,6 @@ global.g_lat = null;
 global.g_lng = null;
 global.apiCallFlag = false;
 global.delayFlag = false;
-global.locationPrekeyLength = 0;
 export default class Home extends React.Component {
       
         constructor (props) {
@@ -200,9 +199,9 @@ export default class Home extends React.Component {
         handleChangeText = (event, newInputValue) => {
             this.setState({ searchValue: newInputValue });
             console.log(newInputValue);
-            if(newInputValue.length === 3 && global.locationPrekeyLength < 3) {
-                
-                getLocationListApi(newInputValue)
+            if(newInputValue.length >= 3) {
+                if(!this.isIncludeStr(newInputValue)) {
+                    getLocationListApi(newInputValue)
                 .then(res => {
                     if(res != null) {
                         this.setState({
@@ -211,12 +210,13 @@ export default class Home extends React.Component {
                     }
                     
                 });
+                } 
+                
             } else if(newInputValue.length < 3) {
                 this.setState({
                     locations: []
                 });
             }
-            global.locationPrekeyLength = newInputValue.length;
         }
         
         handleInputChange = (event, newValue) => {
@@ -264,6 +264,21 @@ export default class Home extends React.Component {
             
         }
         
+        isIncludeStr(str) {
+            var locations = this.state.locations;
+            if(locations.length == 0) {
+                return false;
+            }
+            for(var i = 0 ; i < locations.length ; i++) {
+                var ret = locations[i].name.includes(str);
+                if(ret) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         tick = () => {
             if(global.g_lat != null && global.g_lng != null) {
                 getLocationApi(global.g_lat, global.g_lng)
@@ -400,7 +415,7 @@ export default class Home extends React.Component {
                                     renderOption={(option, { inputValue }) => {
                                         const matches = match(option.name, inputValue);
                                         const parts = parse(option.name, matches);
-                                
+                                        
                                         return (
                                           <div style={{width:"100%"}}>
                                               <div style={{float:'left'}}>
@@ -419,7 +434,7 @@ export default class Home extends React.Component {
                                     onClick={this.handleIconBtnClick}
                                     style={{marginRight:10, border: 0, backgroundColor:"transparent"}} >
                                     {
-                                        this.state.locationLoaingFlag? <CircularProgress /> : <GpsFixedIcon/>
+                                        this.state.locationLoaingFlag? <CircularProgress size={24} /> : <GpsFixedIcon/>
                                     }
                                     
                                 </IconButton>
