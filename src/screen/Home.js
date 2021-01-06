@@ -201,9 +201,7 @@ export default class Home extends React.Component {
             this.setState({ searchValue: newInputValue });
             console.log(newInputValue);
             if(newInputValue.length === 3 && global.locationPrekeyLength < 3) {
-                this.setState({
-                    locationLoaingFlag: true
-                });
+                
                 getLocationListApi(newInputValue)
                 .then(res => {
                     if(res != null) {
@@ -211,9 +209,7 @@ export default class Home extends React.Component {
                             locations: res['locations']
                         });
                     }
-                    this.setState({
-                        locationLoaingFlag: false
-                    });
+                    
                 });
             } else if(newInputValue.length < 3) {
                 this.setState({
@@ -240,20 +236,26 @@ export default class Home extends React.Component {
             function success(position) {
                 global.g_lat  = position.coords.latitude;
                 global.g_lng = position.coords.longitude;
+                
             }
 
             function error() {
-            	console.log('Unable to retrieve your location');
+                console.log('Unable to retrieve your location');
+                
             }
 
             if(!navigator.geolocation) {
                 console.log('Geolocation is not supported by your browser');
             } else {
                 console.log('Locating…');
+                
                 navigator.geolocation.getCurrentPosition(success, error);
             }
             
             console.log('click');
+            this.setState({
+                locationLoaingFlag: true
+            });
             this.timerID = setInterval(
                 this.tick,
                 1000
@@ -288,12 +290,14 @@ export default class Home extends React.Component {
                         };
                         this.setState({
                             inputValue: result,
+                            locationLoaingFlag: false
                         });
                         this.getArticleList(1, result.name, this.state.user_id);
                     } else {
                         alert('Not find location!');
                         this.setState({
                             inputValue: {"name":""},
+                            locationLoaingFlag: false
                         });
                     }
                 })
