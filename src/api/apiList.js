@@ -6,7 +6,6 @@ const {REACT_APP_LOCARION_URL} = process.env;
 export const getArticleListApi = (page=1, prLocation="", userId="") => {
     var apiUrl = REACT_APP_URL + "list?page=" + page;
     if(prLocation !== "") {
-        // var locations = prLocation.split(",");
         var location_url = prLocation.replaceAll(" ", "%20");
         apiUrl = apiUrl + "&location=" + location_url;
     }
@@ -20,7 +19,6 @@ export const getArticleListApi = (page=1, prLocation="", userId="") => {
 }
 
 export const getLocationListApi = (locationKey) => {
-    // var apiUrl = REACT_APP_URL + "newsfeed_locations/matches?startswith=" + locationKey;
     var apiUrl = REACT_APP_LOCARION_URL  + "matches?startswith=" + locationKey;
     console.log(apiUrl);
     return window
@@ -36,11 +34,8 @@ export const getLocationListApi = (locationKey) => {
 }
 
 export const getLocationApi = (lat, lng) => {
-    // var apiUrl = REACT_APP_URL + "newsfeed_locations/suburb?lat=" + lat;
-    // apiUrl =apiUrl + "&lng=" + lng;
     var apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
     apiUrl = apiUrl + lat + ","+ lng + "&key=" + REACT_APP_GOOGLE_MAPS_API_KEY;
-    // apiUrl = REACT_APP_URL + "newsfeed_locations/suburb?lat=-33.887765&lng=151.271559";
     console.log(apiUrl);
     return window
     .fetch(apiUrl)

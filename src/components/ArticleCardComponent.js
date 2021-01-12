@@ -10,7 +10,7 @@ const { REACT_APP_PAGES_URL } = process.env;
 const useStyles = makeStyles((theme) => ({
   root: {
     margin: -8,
-    padding: 4,
+    padding: 4
   },
   details: {
     display: 'flex',
@@ -53,14 +53,14 @@ export default function ArticleCardComponent(props) {
 
   return (
     <Card className={classes.root}>
-      <div style={{display: 'flex', alignItems:"center"}}>
+      <div style={{display: 'flex', alignItems:"center", }}>
           <div className={classes.details} >
             <CardContent className={classes.content}>
                 <Typography component="h5" variant="h5" style={{float:"left", textAlign: '-webkit-left'}}>
                     {props.item.title}
                 </Typography>
             </CardContent>
-            <Typography variant="subtitle1" color="textSecondary" style={{float:"left", textAlign: '-webkit-left', marginLeft:8}}>
+            <Typography variant="subtitle1" color="textSecondary" style={{color:"seagreen", float:"left", textAlign: '-webkit-left', marginLeft:8}}>
                   {props.item.location_name}
                 </Typography>
           </div>

@@ -13,18 +13,25 @@ import { Helmet } from 'react-helmet'
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles } from '@material-ui/core/styles';
+import styles from '../App.css'; 
 
 import ArticleCardComponent from '../components/ArticleCardComponent';
 import {getArticleListApi, getLocationListApi, getLocationApi} from '../api/apiList';
 
 const { REACT_APP_PAGES_URL } = process.env;
+const { REACT_APP_OPACITY } = process.env;
+
 
 global.g_lat = null;
 global.g_lng = null;
 global.apiCallFlag = false;
 global.delayFlag = false;
+
+
 export default class Home extends React.Component {
       
+    
         constructor (props) {
             super(props);
             var cookie_name = Cookies.get("user_id") || "";
@@ -37,11 +44,13 @@ export default class Home extends React.Component {
                 locations:[],
                 data:[],
                 page:1,
+                visitedList: [],
                 searchValue: "",
                 inputValue: inputLocation,
                 user_id : cookie_name,
                 curLocation : cookie_location,
                 locationLoaingFlag: false,
+                loading:false
             };
         }
 
@@ -78,10 +87,7 @@ export default class Home extends React.Component {
                         );
                     }
                 });
-                // this.timerID = setInterval(
-                //     this.redirectTick,
-                //     2000
-                // );
+       
             } else {
                 this.prev = window.scrollY;
                 window.addEventListener('scroll',e => this.trackScrolling(e));
@@ -100,6 +106,7 @@ export default class Home extends React.Component {
                         locations:[],
                         page: init_data.page,
                         data: init_data.data,
+                        visitedList: init_data.visitedList,
                         inputValue: inputLocation,
                         searchValue: "",
                         user_id :  cookie_name,
@@ -122,7 +129,8 @@ export default class Home extends React.Component {
                             });
                             var tem_data = {
                                 page:1,
-                                data: res.articles
+                                data: res.articles,
+                                visitedList: this.state.visitedList
                             };
                             localStorage.setItem("myData",
                                 JSON.stringify(tem_data) 
@@ -142,19 +150,26 @@ export default class Home extends React.Component {
         }
 
         trackScrolling = (e) => {
-            if (this.prev > window.scrollY) {
-                console.log("scrolling up");
+            if(window.innerWidth >= 1024) {
                 this.setState({
                     checked: true
                 });
-
-            } else if (this.prev < window.scrollY) {
-                console.log("scrolling down");
-                this.setState({
-                    checked: false
-                });
+            } else {
+                if (this.prev > window.scrollY) {
+                    console.log("scrolling up");
+                    this.setState({
+                        checked: true
+                    });
+    
+                } else if (this.prev < window.scrollY) {
+                    console.log("scrolling down");
+                    this.setState({
+                        checked: false
+                    });
+                }
+    
             }
-
+            
             this.prev = window.scrollY;
             
             if ((1.5 * window.innerHeight + window.scrollY)>= document.body.offsetHeight) {
@@ -181,7 +196,8 @@ export default class Home extends React.Component {
                         });
                         var tem_data = {
                           page: page1,
-                          data: temp_Data
+                          data: temp_Data,
+                          visitedList: this.state.visitedList
                         };
                         localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
@@ -224,8 +240,10 @@ export default class Home extends React.Component {
             
             if(newValue){
                 this.setState({
-                    inputValue: newValue
+                    inputValue: newValue,
+                    loading:true
                 });
+
                 this.getArticleList(1, newValue.name, this.state.user_id);
             }
             
@@ -286,22 +304,25 @@ export default class Home extends React.Component {
                     if(res != null) {
                         console.log(res);
                         var json = JSON.parse(res);
-                        // var address = json['results'][0]['address_components'];
-                        // var suburb = "";
-                        // var postcode = "";
+                        var address_components = json['results'][0]['address_components'];
+                        var locality = "";
+                        var state = "";
+                        var postal_code = "";
 
-                        // address.forEach(function(entry) {
-                        //     if (entry[['types']][0] == "locality") { suburb = entry['long_name']; }
-                        //     if (entry[['types']][0] == "postal_code") { postcode = entry['long_name']; }
-                        // });
+                        for (var i = 0; i < address_components.length; i++) {
+                            if (address_components[i]['types'][0] == 'locality' && address_components[i]['types'][1] == 'political') {
+                                locality = address_components[i]['long_name']
+                            }
+                            if (address_components[i]['types'][0] == 'administrative_area_level_1' && address_components[i]['types'][1] == 'political') {
+                                state = address_components[i]['short_name']
+                            }
+                            if (address_components[i]['types'][0] == 'postal_code') {
+                                postal_code = address_components[i]['long_name']
+                            }
+                        } 
 
-                        // var result = {
-                        //     "name": suburb + ", " + postcode
-                        // };
-
-                        var address = json['results'][0]['formatted_address'];
                         var result = {
-                            "name": address
+                            "name": locality + ", " + state + " " + postal_code
                         };
                         this.setState({
                             inputValue: result,
@@ -334,6 +355,9 @@ export default class Home extends React.Component {
             console.log('scroll end');
             getArticleListApi(page, location, user_id)
                 .then(res => {
+                    this.setState({
+                        loading:false
+                    });
                     if(res != null) {
                         console.log(res.articles);
                         this.setState({
@@ -344,7 +368,8 @@ export default class Home extends React.Component {
                         });
                         var tem_data = {
                             page:page,
-                            data: res.articles
+                            data: res.articles,
+                            visitedList:this.state.visitedList
                         };
                         localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
@@ -360,7 +385,8 @@ export default class Home extends React.Component {
                         });
                         var tem_data = {
                             page:null,
-                            data: null
+                            data: null,
+                            visitedList: []
                         };
                         localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
@@ -370,6 +396,26 @@ export default class Home extends React.Component {
                     }
                 });
         }
+
+        handeClickArticle(objectID) {
+            var tempVisitedList = this.state.visitedList;
+            if(tempVisitedList.includes(objectID) == false) {
+                tempVisitedList.push(objectID);
+                this.setState({
+                    visitedList: tempVisitedList,
+                });
+                var tem_data = {
+                    page:this.state.page,
+                    data: this.state.data,
+                    visitedList:tempVisitedList
+                };
+                localStorage.setItem("myData",
+                            JSON.stringify(tem_data) 
+                        );
+            }
+           
+        }
+
         render () {
             return (
                 <React.Fragment>
@@ -387,12 +433,13 @@ export default class Home extends React.Component {
                             textAlign:"initial",
                             height: 100,
                             flexShrink: 0,
+                            zIndex:9999
                             }}
 
                     >
                         <Paper style ={{width:'100%'}}>
                             <div style={{display:"flex", alignItems:"center", backgroundColor:'royalblue',}}>
-                                <img style={{marginLeft:10, width: 14, height: 20}} src={process.env.PUBLIC_URL + "/favicon.png"}/>
+                                <img style={{marginLeft:10, width: 32, height: 32}} src={process.env.PUBLIC_URL + "/favicon.ico"}/>
                                 <h3 style={{paddingLeft:10, fontSize: 20, fontFamily: "Courier New"}}>News on Page Two</h3>
                             </div>
                             <div style={{display:"flex", alignItems:"center",}}>
@@ -404,12 +451,14 @@ export default class Home extends React.Component {
                                     inputValue={this.state.searchValue}
                                     onInputChange={this.handleChangeText}
                                     options={this.state.locations}
+                                    
                                     getOptionLabel={(option) => (option?option.name:"")}
                                     renderInput={(params) => (
                                     <TextField 
                                         {...params}  
                                         margin="normal" 
                                         variant="outlined" 
+                                        placeholder="Enter Location or Postcode"
                                         />
                                     )}
                                     renderOption={(option, { inputValue }) => {
@@ -443,15 +492,23 @@ export default class Home extends React.Component {
                         </Paper>
                     </Drawer>
                   <Container maxWidth="md" style={{paddingTop:150}}>
-                      {
-                        this.state.data?(this.state.data.map((item) =>(
+                      { 
+                        !this.state.loading?(
+                            this.state.data?(this.state.data.map((item) =>(
                                 <a style={{
                                     paddingRight: 10,
-                                    textDecoration:"none"}}
-                                    href={REACT_APP_PAGES_URL + item.object_id + "/article.html"} >
-                                    <ArticleCardComponent key={item.object_id} item={item}/>
+                                    textDecoration:"none",}}
+                                    href={REACT_APP_PAGES_URL + item.object_id + "/article.html"} 
+                                    onClick={() => this.handeClickArticle(item.object_id)}
+                                    >
+
+                                    <div style={{opacity:this.state.visitedList.includes(item.object_id)?REACT_APP_OPACITY:1}}>
+                                        <ArticleCardComponent key={item.object_id} item={item}/>
+                                    </div>
+                                    
                                 </a>
                             ))):""
+                        ):<CircularProgress color="secondary" size={50} style={{position:'fixed', top:"50%"}} />
                       }
                   </Container>
                 </React.Fragment>
