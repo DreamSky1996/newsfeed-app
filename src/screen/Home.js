@@ -28,6 +28,7 @@ global.g_lng = null;
 global.apiCallFlag = false;
 global.delayFlag = false;
 
+const EXPIRETIME = 30 * 24 * 60 * 60 * 1000 // 30days
 
 export default class Home extends React.Component {
       
@@ -101,12 +102,17 @@ export default class Home extends React.Component {
                     global.apiCallFlag = false;
                     var init_data = JSON.parse(localStorage.getItem("myData"))
                     var checked = this.state.checked;
+                    var init_visitedList = [];
+                    const now = new Date();
+                    if(now.getTime() < init_data.expiry) {
+                        init_visitedList = init_data.visitedList;
+                    }
                     this.setState({
                         checked: checked,
                         locations:[],
                         page: init_data.page,
                         data: init_data.data,
-                        visitedList: init_data.visitedList,
+                        visitedList: init_visitedList,
                         inputValue: inputLocation,
                         searchValue: "",
                         user_id :  cookie_name,
@@ -127,10 +133,12 @@ export default class Home extends React.Component {
                                 user_id :res.user_id,
                                 curLocation: res.location
                             });
+                            const now = new Date();
                             var tem_data = {
                                 page:1,
                                 data: res.articles,
-                                visitedList: this.state.visitedList
+                                visitedList: this.state.visitedList,
+                                expiry: now.getTime() + EXPIRETIME,
                             };
                             localStorage.setItem("myData",
                                 JSON.stringify(tem_data) 
@@ -194,10 +202,12 @@ export default class Home extends React.Component {
                             user_id :res.user_id,
                             curLocation: res.location
                         });
+                        const now = new Date();
                         var tem_data = {
                           page: page1,
                           data: temp_Data,
-                          visitedList: this.state.visitedList
+                          visitedList: this.state.visitedList,
+                          expiry: now.getTime() + EXPIRETIME,
                         };
                         localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
@@ -236,7 +246,6 @@ export default class Home extends React.Component {
         }
         
         handleInputChange = (event, newValue) => {
-            
             
             if(newValue){
                 this.setState({
@@ -366,10 +375,12 @@ export default class Home extends React.Component {
                             curLocation: location,
                             user_id :res.user_id,
                         });
+                        const now = new Date();
                         var tem_data = {
                             page:page,
                             data: res.articles,
-                            visitedList:this.state.visitedList
+                            visitedList:this.state.visitedList,
+                            expiry: now.getTime() + EXPIRETIME,
                         };
                         localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
@@ -383,10 +394,12 @@ export default class Home extends React.Component {
                             curLocation: "",
                             user_id :"",
                         });
+                        const now = new Date();
                         var tem_data = {
                             page:null,
                             data: null,
-                            visitedList: []
+                            visitedList: [],
+                            expiry: now.getTime(),
                         };
                         localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
@@ -404,10 +417,12 @@ export default class Home extends React.Component {
                 this.setState({
                     visitedList: tempVisitedList,
                 });
+                const now = new Date();
                 var tem_data = {
                     page:this.state.page,
                     data: this.state.data,
-                    visitedList:tempVisitedList
+                    visitedList:tempVisitedList,
+                    expiry: now.getTime() + EXPIRETIME,
                 };
                 localStorage.setItem("myData",
                             JSON.stringify(tem_data) 
