@@ -157,6 +157,9 @@ export default class Home extends React.Component {
             window.removeEventListener('scroll', this.trackScrolling);
         }
 
+        /**
+         * This function handle mouse scroll event.
+         */
         trackScrolling = (e) => {
             if(window.innerWidth >= 1024) {
                 this.setState({
@@ -164,13 +167,13 @@ export default class Home extends React.Component {
                 });
             } else {
                 if (this.prev > window.scrollY) {
-                    console.log("scrolling up");
+                    // scroll up
                     this.setState({
                         checked: true
                     });
     
                 } else if (this.prev < window.scrollY) {
-                    console.log("scrolling down");
+                    // scroll down
                     this.setState({
                         checked: false
                     });
@@ -221,7 +224,9 @@ export default class Home extends React.Component {
               });
             }
         };
-
+        /**
+         * This function handle location string change event 
+         */
         handleChangeText = (event, newInputValue) => {
             this.setState({ searchValue: newInputValue });
             console.log(newInputValue);
@@ -245,6 +250,9 @@ export default class Home extends React.Component {
             }
         }
         
+        /**
+         * This function handle location list select event.
+         */
         handleInputChange = (event, newValue) => {
             
             if(newValue){
@@ -258,6 +266,9 @@ export default class Home extends React.Component {
             
         };
 
+        /**
+         * This function handle location button click event.
+         */
         handleIconBtnClick = () => {
 
             function success(position) {
@@ -290,7 +301,9 @@ export default class Home extends React.Component {
 
             
         }
-        
+        /**
+         * This function is checked whether to check string in the loction list.
+         */
         isIncludeStr(str) {
             var locations = this.state.locations;
             if(locations.length == 0) {
@@ -305,7 +318,11 @@ export default class Home extends React.Component {
 
             return false;
         }
-
+        /**
+         * This function handle timer event.
+         * This function get loction sting from coordinate using location Api.
+         * and then get article list form location string.
+         */
         tick = () => {
             if(global.g_lat != null && global.g_lng != null) {
                 getLocationApi(global.g_lat, global.g_lng)
@@ -349,7 +366,10 @@ export default class Home extends React.Component {
                 clearInterval(this.timerID);
             }
         }
-
+        /**
+         * This function handle timer event.
+         * This function is redirected to article url after 2 seconds.
+         */
         redirectTick = () => {
             if(global.delayFlag) {
                 clearInterval(this.timerID);
@@ -359,6 +379,10 @@ export default class Home extends React.Component {
             global.delayFlag = true;
         }
 
+        /**
+         * This function get article list using article api.
+         * params: page(number), location(string), user_did(string)
+         */
 
         getArticleList(page, location, user_id) {
             console.log('scroll end');
@@ -410,6 +434,10 @@ export default class Home extends React.Component {
                 });
         }
 
+        /**
+         * This function handle article click event.
+         * This function save clicked article ID.
+         */
         handeClickArticle(objectID) {
             var tempVisitedList = this.state.visitedList;
             if(tempVisitedList.includes(objectID) == false) {

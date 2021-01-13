@@ -1,3 +1,9 @@
+/**
+ * Name:        Client
+ * parameter:   endpoint (rest api url)
+ * return:      rest api response
+ * description: this function is that request api and receive response.
+ */
 function Client(endpoint) {
     return window.fetch(endpoint)
     .then(r => {
