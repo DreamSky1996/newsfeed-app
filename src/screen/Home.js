@@ -21,6 +21,8 @@ import {getArticleListApi, getLocationListApi, getLocationApi} from '../api/apiL
 
 const { REACT_APP_PAGES_URL } = process.env;
 const { REACT_APP_OPACITY } = process.env;
+const { REACT_APP_VERSION } = process.env;
+
 
 
 global.g_lat = null;
@@ -95,9 +97,7 @@ export default class Home extends React.Component {
     
                 var cookie_name = Cookies.get("user_id") || "";
                 var cookie_location = Cookies.get("curLocation") || "";
-                var inputLocation = {
-                    "name": cookie_location
-                }
+                
                 if(localStorage.getItem("myData")){
                     global.apiCallFlag = false;
                     var init_data = JSON.parse(localStorage.getItem("myData"))
@@ -107,6 +107,9 @@ export default class Home extends React.Component {
                     if(now.getTime() < init_data.expiry) {
                         init_visitedList = init_data.visitedList;
                     }
+                    var inputLocation = {
+                        "name": init_data.location
+                    }
                     this.setState({
                         checked: checked,
                         locations:[],
@@ -115,8 +118,8 @@ export default class Home extends React.Component {
                         visitedList: init_visitedList,
                         inputValue: inputLocation,
                         searchValue: "",
-                        user_id :  cookie_name,
-                        curLocation : cookie_location,
+                        user_id :  init_data.user_id,
+                        curLocation : init_data.location,
                     });
                 }else{
                     getArticleListApi(1, cookie_location, cookie_name)
@@ -137,6 +140,8 @@ export default class Home extends React.Component {
                             var tem_data = {
                                 page:1,
                                 data: res.articles,
+                                user_id :res.user_id,
+                                location: res.location,
                                 visitedList: this.state.visitedList,
                                 expiry: now.getTime() + EXPIRETIME,
                             };
@@ -209,6 +214,8 @@ export default class Home extends React.Component {
                         var tem_data = {
                           page: page1,
                           data: temp_Data,
+                          user_id :res.user_id,
+                          location: res.location,
                           visitedList: this.state.visitedList,
                           expiry: now.getTime() + EXPIRETIME,
                         };
@@ -403,6 +410,8 @@ export default class Home extends React.Component {
                         var tem_data = {
                             page:page,
                             data: res.articles,
+                            user_id: res.user_id,
+                            location: res.location,
                             visitedList:this.state.visitedList,
                             expiry: now.getTime() + EXPIRETIME,
                         };
@@ -422,6 +431,8 @@ export default class Home extends React.Component {
                         var tem_data = {
                             page:null,
                             data: null,
+                            user_id: "",
+                            location: "",
                             visitedList: [],
                             expiry: now.getTime(),
                         };
@@ -449,6 +460,8 @@ export default class Home extends React.Component {
                 var tem_data = {
                     page:this.state.page,
                     data: this.state.data,
+                    user_id :this.state.user_id,
+                    location: this.state.curLocation,
                     visitedList:tempVisitedList,
                     expiry: now.getTime() + EXPIRETIME,
                 };
@@ -483,7 +496,7 @@ export default class Home extends React.Component {
                         <Paper style ={{width:'100%'}}>
                             <div style={{display:"flex", alignItems:"center", backgroundColor:'royalblue',}}>
                                 <img style={{marginLeft:10, width: 32, height: 32}} src={process.env.PUBLIC_URL + "/favicon.ico"}/>
-                                <h3 style={{paddingLeft:10, fontSize: 20, fontFamily: "Courier New"}}>News on Page Two</h3>
+                                <h3 style={{paddingLeft:10, fontSize: 20, fontFamily: "Courier New"}}>News on Page Two v{REACT_APP_VERSION}</h3>
                             </div>
                             <div style={{display:"flex", alignItems:"center",}}>
                                 <Autocomplete

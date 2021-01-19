@@ -69,7 +69,7 @@ export default function ArticleCardComponent(props) {
           </div>
       </div>
       <div>
-            <Typography variant="subtitle1" color="textSecondary" style={{textAlign:"left", marginLeft:8}}>
+            <Typography variant="subtitle1" color="textSecondary" style={{textAlign:"left", lineHeight:1.5, marginLeft:8}}>
                  <div dangerouslySetInnerHTML={{__html: props.item.text}}></div>
             </Typography>
             <Grid className={classes.controls} justify="space-between">
